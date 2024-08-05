@@ -1,0 +1,11 @@
+import React from 'react';
+function Header(){
+    return(//<h1> hello w</h1>
+        <div>
+            <input type="Check box"/>
+            <p>Employee Id</p>
+        </div>
+
+    );
+}
+export default Header;

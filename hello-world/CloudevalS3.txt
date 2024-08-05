@@ -1,0 +1,212 @@
+var http = require('http');
+var url = require('url');
+var mysql = require('mysql');
+const AWS  = require('aws-sdk');
+const fs = require('fs');
+const path= require('path');
+
+
+AWS.config.update({
+    "accessKeyId":"ASIA3SREPMYOA4AIK74W",
+    "secretAccessKey":"rMCjG8TX52jGHsaIxLykjVstrlOJrB2wpLoET6h7",
+    "sessionToken":"FQoGZXIvYXdzEP7//////////wEaDAH1X2NuLfo+Cv7tcSL8BNZgdizDC6Oeg+NKiHpd7G8fHZakFPNZypJe0ZLCoG4q0ecqGUcL+4x/bZOQ3jD7EPyIWhFqmGJ2918ji3QdIjB3UIMUAXzlf/EfhpELX1SWHPw70eYNI/ReqKQUl+YyJXd4jqwTCmgB9zLUqXPTjhvh7EkxTIxpIuj/1jCeHvMlDaGt57TU00K4c0hnQ9KJYeH+VHw1K4mQm7N+MNrLijRLFWmY02kPA0hhe31loXYD45l2wUJGHdhSlj4fRu0U/QmiKipB5SOSBBpi76TpqRWEcLGbtlsbVCurQyvtCithLTxOQ4tuONX5CIDNpSotW51QS2jS/3dhkN3Wmznw8Qr4eGH3Wehh5Bz45o+46s/DNHebrrVG5XD3bAjWk1AmatJEwO7y1aiBT+u88eW7QopN/21Uum18aEKJCiN5olxF8Ly4p5A481E5jzxVJWdY5J1749FFmaOEGaIp5flKv14kgVGEEhAeMSyizNX6VD5bhyJhogh8XziI9J/wASB3cRd48p+Es3GbXz/fULPWzvjlYuIUx4uOEquI4XpGTlwb9t2Hjt3Ovhf7OpmVT+PuEe8JnDfpMR5x4Ej1vdbC02xmlwLBqDzT19tJJ2lDLVsmFayhrrnNkdBrMVxZ82ToPU1O9AnYeEjNrTtqZVv3Wjke/KhTzjjqCXQCbrB70KAUBGvLByT3LPktsGqMdii0XUPwDzcdbKdjNgHAt36qEcdd49WCWCUXCZ6CWSaR10U+us+mvdhSKuNPTDVUP6fjFekc0QMkAMJWa73aFwSUyzzoAdoxY0ph+GsTDbQVfnz4lieH+xqHCKP7q30BpCKCFh63AlAqeFNhlHi8QCi1yujqBQ==",
+    "region":"us-east-1"
+    })
+
+
+    
+
+var redir = false;
+var length = 0;
+var length2 = 0;
+
+http.createServer(function(req,res){
+    res.writeHead(200,{'Content-Type':'text/html'});
+    var q = url.parse(req.url,true).query;
+    res.write('<br/>'+ q.entdate + '<br/>' + q.days + '<br/>' + q.country + '<br/>' + q.sta);
+    console.log(q.loc);
+
+    function qu(){
+
+
+      var connection = mysql.createConnection({
+        host     : "db-instance1.c7pps0mhymd3.us-east-1.rds.amazonaws.com",
+        user     : "jayakrishna",
+        password : "Rds#account1",
+        port     : "3306",
+        database : "eval1"
+        });
+    
+    
+    var records = [[q.Username,q.Password,q.type]];
+
+    if(records[0][0]!=null)
+    {
+    connection.query("INSERT INTO Cloud1(un,pwd,des) VALUES ?", [records], function (err, result, fields) {
+    
+    if (err) throw err;
+    
+    console.log(result);
+    });
+    }
+
+    connection.connect(function(err) {
+        if (err) {
+          console.error('Database connection failed: ' + err.stack);
+          return;
+        }
+        console.log('Connected to database.');
+    });
+
+    connection.connect(function(err) {
+      if (err) {
+        console.error('Database connection failed: ' + err.stack);
+        return;
+      }
+      console.log('Connected to database.');
+  });
+
+
+   connection.query('SELECT * from Cloud1', function (error, results, fields) {
+      if (error) throw error;
+      var length=results.length
+    
+      for(i=0;i<length;i++)
+      {
+          console.log('\nThe solution is: ', results[i].un , results[i].pwd);
+      }  
+  });
+
+
+
+
+  connection.end();
+
+
+    function qu2(){
+      if((length === 0) && (length2 === 0))
+      {
+        var s3=new AWS.S3({apiVersion:'2006-03-01'});
+        var filepath="./image/"+q.loc;
+        var params={
+        Bucket:"bucket1140",
+        Body: fs.createReadStream(filepath),
+        //Key:"Data1/"+path.basename(filepath),
+        Key:path.basename(filepath),
+        }
+        s3.upload(params,function(err,data)
+        {
+          if(err)
+          {
+            console.log("Error",err)
+          }
+          if(data)
+          {
+            console.log("Success")
+          }
+        })
+      }
+      else
+      {
+        console.log("redir == false");
+      }
+      
+     
+    }
+    
+
+    qu();
+
+
+
+    setTimeout(qu2, 20000);
+
+
+
+
+
+
+}).listen(8081);
+
+        /*var records = [[q.entdate,q.days,q.country,q.sta]];
+    
+        if(records[0][0]!=null)
+        {
+        connection.query("INSERT INTO data1 (da,days,country,state) VALUES ?", [records], function (err, result, fields) {
+        
+        if (err) throw err;
+        
+        console.log(result);
+        });
+        }
+    
+        connection.connect(function(err) {
+            if (err) {
+              console.error('Database connection failed: ' + err.stack);
+              return;
+            }
+            console.log('Connected to database.');
+        });
+    
+    
+         connection.query('SELECT * from data1 where days>30', function (error, results, fields) {
+            if (error) throw error;
+            length=results.length
+    
+            for(i=0;i<length;i++)
+            {
+                console.log('\nThe solution is: ', results[i].days);
+            }
+    
+    
+            // if(length > 0)
+            // {
+            //   console.log('redir enter days');
+            //   redir= true;
+            // }
+    
+          
+          });
+    
+          connection.query('delete from data1 where days>30;',function (error2,temp,feilds2){
+            if (error2) throw error2;
+          });
+          
+    
+    
+          connection.query('select * from data1 where da>(SELECT CONVERT(NOW(), DATETIME));', function (error, results, fields) {
+            if (error) throw error;
+            length2=results.length;
+    
+            for(i=0;i<length2;i++)
+            {
+                console.log('\nThe solution is: ', results[i].days);
+            }
+    
+    
+            // if(length2 > 0)
+            // {
+            //     console.log('redir enter date');
+            //   redir= true;
+            // }
+    
+          });
+    
+          res.end(); 
+    
+    
+          connection.query('delete from data1 where da>(SELECT CONVERT(NOW(), DATETIME));',function (error2,temp,feilds2){
+            if (error2) throw error2;
+            //console.log('deleted'+ temp);
+          });
+    
+       
+    
+        
+        connection.end();
+
+
+
+
+
+    }*/
